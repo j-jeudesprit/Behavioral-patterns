@@ -156,5 +156,118 @@ button.handle(someRequest)
 --------------      
 ![](https://refactoring.guru/images/patterns/content/command/command-2x.png)   
   
-**Команда** — это поведенческий паттерн проектирования, который
+**Команда** — это поведенческий паттерн проектирования, который инкапсулирует запрос как объект, позволяя передавать их как аргументы при вызове методов, ставить запросы в очередь, вести логи и поддерживать отмену запроса. 
+
+Иногда необходимо посылать объектам запросы, ничего не зная о том, выполнение какой операции запрошено и кто является получателем. Например, в библиотеках для построения пользовательских интерфейсов встречаются такие объекты, как кнопки и меню, которые посылают запрос в ответ на действие пользователя. Но в саму библиотеку не заложена возможность обрабатывать этот запрос, так как только приложение, использующее её, располагает информацией о том, что следует сделать. Проектировщик библиотеки не владеет никакой информацией о получателе запроса и о том, какие операции тот должен выполнить.
+Паттерн **Команда** позволяет библиотечным объектам отправлять запросы неизвестным объектам приложения, преобразовав сам запрос в объект. Этот объект можно хранить и передавать, как и любой другой. В основе описываемого паттерна лежит интерфейс, в котором объявлены операции для выполнения. В простейшей своей форме этот интерфейс состоит из одной абстрактной операции *execute*. Конкретные классы реализующие интерфейс определяют пару «получатель действие», сохраняя получателя в переменной экземпляра, и реализуют операцию *execute*, так чтобы она посылала запрос. У получателя есть информация, необходимая для выполнения запроса.
+
+```swift
+// Получатели
+
+class Application { }
+class Document { }
+
+// Команды
+
+protocol Command {
+    func execute()
+}
+
+class OpenCommand: Command {
+    private var responce: Application
+
+    init(responce: Application) {
+        self.responce = responce
+    }
+
+    func execute() {
+        // ...
+    }
+
+    // ...
+}
+
+class PasteCommand: Command {
+    private var responce: Document
+
+    init(responce: Document) {
+        self.responce = responce
+    }
+
+    func execute() {
+        // ...
+    }
+
+    // ...
+}
+```
+
+Иногда может возникнуть потребность в выполнении сразу нескольких команд, для таких случаев можно определить следующий класс: 
+
+```swift
+class MultiCommand: Command {
+    private var list = [Command]()
+
+    func execute() {
+        for command in list {
+            command.execute()
+        }
+    }
+
+    func add(_ command: Command) {
+        // ...
+    }
+
+    func remove(_ command: Command) {
+        // ...
+    }
+
+    // ...
+}
+```
+
+
+Теперь в коде мы может легко передавать любую команду, при этом мы не знаем, что это за команда и кому она адресована, да нам собственно это и не важно. 
+
+```swift
+	class Client {
+    var command: Command!
+
+    func action1() {
+        // ...
+        if ... {
+            command.execute()
+        }
+    }
+
+    func action2() {
+        // ...
+        if ... {
+            command.execute()
+        }
+    }
+
+    // ...
+}
+
+// Main
+
+let client = Client()
+
+client.command = PasteCommand(responce: Document())
+client.action1()
+client.action2()
+
+client.command = OpenCommand(responce: Application())
+client.action1()
+client.action2()
+
+client.command = MultiCommand()
+let multi = client.command! as! MultiCommand
+multi.add(OpenCommand(responce: Application()))
+multi.add(PasteCommand(responce: Document()))
+client.action1()
+client.action2()
+```
+
 
