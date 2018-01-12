@@ -230,7 +230,7 @@ class MultiCommand: Command {
 Теперь в коде мы может легко передавать любую команду, при этом мы не знаем, что это за команда и кому она адресована, да нам собственно это и не важно. 
 
 ```swift
-	class Client {
+class Client {
     var command: Command!
 
     func action1() {
