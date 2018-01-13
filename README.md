@@ -302,4 +302,7 @@ literal ::= 'a' | 'b' | 'c' | ... { 'a' | 'b' | 'c' | ... }*
 ![](https://i.imgur.com/C5PNclC.jpg)  
   
 представляет выражение ```raining & (dogs | cats) * ```    
+
   
+[Отличный пример реализации на Swift ](https://github.com/kingreza/Swift-Interpreter)
+
