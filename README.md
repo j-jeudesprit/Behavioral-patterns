@@ -483,4 +483,186 @@ class ConcreateObserverB: Observer {
 
 Объект *ConcreteSubject* уведомляет своих наблюдателей о любом изменении, которое могло бы привести к рассогласованности состояний наблюдателя и субъекта. После получения от конкретного субъекта уведомления об изменении объект *ConcreteObserver* может запросить у субъекта дополнительную информацию, которую использует для того, чтобы оказаться в состоянии, согласованном с состоянием субъекта.
 
+***
+[Observer](#observer) 
+--------------      
+![](https://refactoring.guru/images/patterns/content/observer/observer-2x.png)  
+  
+**Наблюдатель** — это поведенческий паттерн проектирования, который предоставляет механизм оповещений при изменении состояния одного объекта, всем зависящим от него объектам.
+
+Представим простую ситуацию, вы ждете появление некоего товара в магазине. Каждый раз ходить в магазин и узнавать о его наличии, дело не хитрое. С другой стороны  и от самого магазина вы бы не хотели получать различного рода письма, даже если среди них и будет нужное вам оповещение. Самым простым решение будет возможность подписки на изменения конкретного объекта, то есть товара в магазине и возможность отписки от оповещений. Такую задачу решает паттерн **Наблюдатель**.
+
+Представим, что наш товар это конкретный субъект и вообще говоря их может быть сколько угодно. Для этой цели мы определим интерфейс *Subject*, в котором будут методы подписки/отписки и оповещения. Так же определим интерфейс *Observer* с методом обновления, что бы любой мог стать наблюдателем. В первую очередь этот интерфейс нужен для того, что бы интерфейсу *Subject* не было никакой разницы, кто на него подписан. Реализую интерфейс *Observer* можно стать наблюдателем. 
+
+```swift
+protocol Observer {
+    var subject: Subject { get }
+    func notify()
+}
+
+//###############################
+
+protocol Subject {
+    var observerCollection: [Observer] { get }
+
+    func register(_ observer: Observer)
+    func unregister(_ observer: Observer)
+    func notifyObservers()
+}
+
+//###############################
+
+class ConcreateSubject: Subject {
+    var observerCollection = [Observer]()
+
+    func register(_ observer: Observer) {
+        observerCollection.append(observer)
+    }
+
+    func unregister(_ observer: Observer) {
+        // ...
+    }
+
+    func notifyObservers() {
+        for observer in observerCollection {
+            observer.notify()
+        }
+    }
+
+    // ...
+}
+
+//###############################
+
+class ConcreateObserverA: Observer {
+    var subject: Subject
+
+    func notify() {
+        // ...
+    }
+
+    // ...
+}
+
+class ConcreateObserverB: Observer {
+    var subject: Subject
+
+    func notify() {
+        // ...
+    }
+
+    // ...
+}
+```
+
+Объект *ConcreteSubject* уведомляет своих наблюдателей о любом изменении, которое могло бы привести к рассогласованности состояний наблюдателя и субъекта. После получения от конкретного субъекта уведомления об изменении объект *ConcreteObserver* может запросить у субъекта дополнительную информацию, которую использует для того, чтобы оказаться в состоянии, согласованном с состоянием субъекта.
+
+
+***
+[State](#state) 
+--------------      
+![](https://refactoring.guru/images/patterns/content/state/state-2x.png)  
+  
+**Состояние** — это поведенческий паттерн проектирования, который позволяет варьировать своё поведение в зависимости от внутренного состояния. 
+
+Рассмотрим класс *TCPConnection*, с помощью которого представлено сетевое соединение. Объект этого класса может находиться в одном из нескольких состояний: *Established* (установлено), *Listening* (прослушивание), *Closed* (закрыто). Когда объект *TCPConnection* получает запросы от других объектов, то в зависимости от текущего состояния он отвечает по разному. Например, ответ на запрос *Open* (открыть) зависит от того, находится ли соединение в состоянии *Closed* или *Established*. Паттерн **Состояние** описывает, каким образом объект *TCPConnection* может вести себя по разному, находясь в различных состояниях.
+
+Основная идея этого паттерна заключается в том, чтобы ввести абстрактный класс *TCPState* для представления различных состояний соединения. Этот класс объявляет интерфейс, общий для всех классов, описывающих различные рабочие состояния. В подклассах *TCPState* реализовано поведение, специфичное для конкретного состояния. Например, в классах *TCPEstablished* и *TCPClosed* реализовано поведение, характерное для состояний *Established* и *Closed* соответственно.
+
+![](https://i.imgur.com/zVgYPbk.png)
+
+Класс *TCPConnection* хранит у себя объект состояния (экземпляр некоторого подкласса *TCPState*), представляющий текущее состояние соединения, и делегирует все зависящие от состояния запросы этому объекту. *TCPConnection* использует свой экземпляр подкласса *TCPState* для выполнения операций, свойственных только данному состоянию соединения.
+При каждом изменении состояния соединения *TCPConnection* изменяет свой объект состояние. Например, когда установленное соединение закрывается, *TCPConnection* заменяет экземпляр класса *TCPEstablished* экземпляром *TCPClosed*.
+
+```swift
+class TCPConnection {
+    private var state: TCPState = TCPClosed()
+
+    func open() {
+        state.open()
+
+        state = TCPEstablished()
+        // ...
+    }
+
+    func close() {
+        state.close()
+        // ...
+    }
+
+    func acknowledge() {
+        state.acknowledge()
+        // ...
+    }
+
+    // ...
+}
+
+//###############################
+
+protocol TCPState {
+    func open()
+    func close()
+    func acknowledge()
+}
+
+class TCPEstablished: TCPState {
+    func open() {
+        print("TCPEstablished : \(#function)")
+        // ...
+    }
+
+    func close() {
+        print("TCPEstablished : \(#function)")
+        // ...
+    }
+
+    func acknowledge() {
+        print("TCPEstablished : \(#function)")
+        // ...
+    }
+}
+
+class TCPListen: TCPState {
+    func open() {
+        print("TCPListen : \(#function)")
+        // ...
+    }
+
+    func close() {
+        print("TCPListen : \(#function)")
+        // ...
+    }
+
+    func acknowledge() {
+        print("TCPListen : \(#function)")
+        // ...
+    }
+}
+
+class TCPClosed: TCPState {
+    func open() {
+        print("TCPClosed : \(#function)")
+        // ...
+    }
+
+    func close() {
+        print("TCPClosed : \(#function)")
+        // ...
+    }
+
+    func acknowledge() {
+        print("TCPClosed : \(#function)")
+        // ...
+    }
+}
+
+
+//###############################
+// Main
+
+let connection = TCPConnection()
+connection.open() // TCPClosed : open()
+connection.open() // TCPEstablished : open()
+```
 
