@@ -798,6 +798,93 @@ Hello from ConcreteClass2 : step3()
 */
 ```
 
+***
+[Visitor](#visitor)  
+--------------      
+![](https://refactoring.guru/images/patterns/content/visitor/visitor-2x.png)  
+  
+**Посетитель** — это поведенческий паттерн проектирования, который описывает операцию, выполняемую с каждым объектом из некоторой структуры. Позволяет определить новую операцию, не изменяя классы этих объектов.
 
+Представим, что у нас уже есть несколько готовых классов, которые содержат всю нужную функциональность и отлично работают. По истечению времени, кто-то нас просит добавить какую-то новую функциональность к нашим классам. Во-первых мы бы не хотели изменять наши классы вообще, во-вторых мы бы не хотели, чтобы у наших классов в списке методов присутствовала бы новая функциональность, т.к. она не сильно соответсвует логике класса. Что же делать? При чём со временем могут попросить добавить ещё. Помимо того, чтобы добавить функциональность классу, нужно позаботиться и о том, что бы наш класс не зависел от какой-то конкретной новой операции. 
 
+Паттерн **Посетитель** решает проблему добавление новой функциональности и изолирование от конкретной операции. **Посетитель** определяет интерфейс *Visitor*, в котором мы объявляем операции для каждого нужного нам класса. В качестве аргумента у каждой операции будет ссылка на объект, у которого мы хотим вызвать эту операцию. 
 
+```swift
+protocol Visitor {
+    func visitConcreteElement(_ elem: ConcreteElementA)
+    func visitConcreteElement(_ elem: ConcreteElementB)
+    func visitConcreteElement(_ elem: ConcreteElementC)
+}
+```
+
+Для простоты мы добавляем лишь один метод *visitConcreteElement*, где *ConcreteElementA, ConcreteElementB, ConcreteElementC*, суть ссылки на объекты соответствующих классов, куда мы хотим добавить эту новую функцию. 
+
+Определим соответсвующие классы реализующие этот интерфейс.
+
+```swift
+class ConcreteVisitor1: Visitor {
+    func visitConcreteElement(_ elem: ConcreteElementA) {
+        // ...
+    }
+
+    func visitConcreteElement(_ elem: ConcreteElementB) {
+        // ...
+    }
+
+    func visitConcreteElement(_ elem: ConcreteElementC) {
+        // ...
+    }
+}
+
+class ConcreteVisitor2: Visitor {
+    func visitConcreteElement(_ elem: ConcreteElementA) {
+        // ...
+    }
+
+    func visitConcreteElement(_ elem: ConcreteElementB) {
+        // ...
+    }
+
+    func visitConcreteElement(_ elem: ConcreteElementC) {
+        // ...
+    }
+}
+```
+
+Классов будет столько, сколько различных реализаций новой функции нам нужно. 
+
+Несмотря на то, что сами функции мы отделили от класса, всё же небольшое изменение нам нужно произвести. Но оно будет совсем незаметным. 
+
+```swift
+protocol Element {
+    func accept(_ with: Visitor)
+}
+
+class ConcreteElementA: Element {
+    func accept(_ with: Visitor) {
+        with.visitConcreteElement(self)
+    }
+
+    // ...
+}
+
+class ConcreteElementB: Element {
+    func accept(_ with: Visitor) {
+        with.visitConcreteElement(self)
+    }
+
+    // ...
+}
+
+class ConcreteElementC: Element {
+    func accept(_ with: Visitor) {
+        with.visitConcreteElement(self)
+    }
+
+    // ...
+}
+```
+
+Мы лишь определили интерфейс, который содержит один единственный метод, метод вызова новой функциональности. 
+
+Теперь сама новая функциональность полностью отделена от классов, при этом классам нет никакой разницы, какую именно реализацию им передают. Достаточно вызвать метод *accept*, передать нужную реализации и он выполнит новый функционал. 
