@@ -717,5 +717,87 @@ class Navigator {
 }
 ```
 
+***
+[Template Method](#template-method)  
+--------------      
+![](https://refactoring.guru/images/patterns/content/template-method/template-method-2x.png)  
+  
+**Шаблонный метод** — это поведенческий паттерн проектирования, который определяет основу алгоритма и позволяет подклассам переопределись некоторые шаги алгоритма, не изменяя его структуру в целом.
+
+Снова затронем тему алгоритмов. Допустим вы написали некоторый алгоритм, пусть это будем шифрование. Разбили его на шаги и создали класс. Пока всё отлично и он прекрасно работает. В скором времени вы решили добавить другой тип шифрования и заметили, что шаги у вас ровно такие, как и были раньше, отличается лишь их реализация. Но при этом вы повторили некоторые части предыдущего алгоритма. Добавили новый тип шифрования, где вы также видите те же самые шаги, некоторые из них вы повторили, а какие-то изменили. Более того, код в котором используются данные алгоритмы вынужден делать проверку, а какой собственно алгоритм я сейчас использую. 
+
+Паттерн **Шаблонный метод** решает эти проблемы, путём создание абстрактного класса, определяющего шаги нашего алгоритма и так называемого **шаблонного метода**, в котором вы запускаете все шаги алгоритма. Соответсвующие подклассы переопределяют нужные шаги алгоритма. При этом вызывающий код не должен заботиться о том, какой алгоритм он использует сейчас, он просто вызывает *шаблонный метод*, который запускает алгоритм. 
+
+```swift
+class AbstractClass {
+    final func temlateMethod() {
+        // ...
+        step1()
+        // ...
+        step2()
+        // ...
+        step3()
+        // ...
+    }
+
+    func step1() {
+        print("Hello from AbstractClass : \(#function)")
+        // ...
+    }
+
+    func step2() {
+        fatalError("not defaut implementation")
+    }
+
+    func step3() {
+        print("Hello from AbstractClass : \(#function)")
+        // ...
+    }
+}
+
+
+class ConcreteClass1:  AbstractClass {
+    override func step2() {
+        print("Hello from ConcreteClass1 : \(#function)")
+        // ...
+    }
+}
+
+class ConcreteClass2:  AbstractClass {
+    override func step2() {
+        print("Hello from ConcreteClass1 : \(#function)")
+        // ...
+    }
+
+    override func step3() {
+        print("Hello from ConcreteClass1 : \(#function)")
+        // ...
+    }
+}
+```
+
+Теперь мы с лёгкость можем переопределись нужные нам шаги алгоритма, при этом клиентский код не зависит от конкретного типа алгоритма. 
+
+```swift
+// Main
+
+var conreteClass: AbstractClass = ConcreteClass1()
+conreteClass.temlateMethod()
+/*   
+Hello from AbstractClass : step1()
+Hello from ConcreteClass1 : step2()
+Hello from AbstractClass : step3()  
+*/
+
+conreteClass = ConcreteClass2()
+conreteClass.temlateMethod()
+/*  
+Hello from AbstractClass : step1()
+Hello from ConcreteClass2 : step2()
+Hello from ConcreteClass2 : step3()
+*/
+```
+
+
 
 
